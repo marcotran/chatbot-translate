@@ -38,26 +38,19 @@ Or create a file named: `keys.js` and export these values.
 node app.js
 ```
 
-![Imgur](https://i.imgur.com/d7MXzlT.png)
 
 > Install Microsoft Bot Emulator 
 
 Download and Install [Microsoft Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator/releases) to run on localhost.
 
-Enter your appId and appPassword and click connect, 
-
-![Imgur](https://i.imgur.com/bTS1Rri.png)
+Enter your appId and appPassword and click connect.
 
 
 
-Afterwards, you can interact with the bot like so:
 
-![Imgur](https://i.imgur.com/eF4HWwn.png)
+
+
 
 
 
 ### License
-
-Langur - Language translation chat bot is released under [GNU General Public License v3.0](License.md). Please refer to the LICENSE file for detailed information. 
-
-Copyright: [Arshad Mehmood](https://arshadmehmood.com/)
