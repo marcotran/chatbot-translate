@@ -13,9 +13,9 @@
   "author": "Arshad Mehmood <arshad115@hotmail.com> (https://arshadmehmood.com/)",
   "license": "GPL-3.0",
   "dependencies": {
+    "@google-cloud/translate": "^4.1.0",
     "botbuilder": "^3.16.0",
     "dotenv": "^4.0.0",
-    "google-translate-api": "^2.3.0",
     "restify": "^6.0.0"
   },
   "repository": "github:arshad115/langur-translation-bot",

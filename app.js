@@ -7,16 +7,32 @@ var builder = require('botbuilder');
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+    console.log('%s listening to %s', server.name, server.url);
 });
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
-    appId: '86e7ea72-34a0-41dd-80b7-98b1d6b136df', //Replace with App Id from your Microsoft bot
-    appPassword: 'mahBDM1(:}cqojQZIK7690^' //Replace with App Password from your Microsoft bot
+    appId: '1d8fb65e-4965-465f-bf33-d9df7f392451', //Replace with App Id from your Microsoft bot
+    appPassword: 'ocyIIAG3![+fjwvCRI1460]' //Replace with App Password from your Microsoft bot
 });
 
-const translate = require('google-translate-api');
+// const translate = require('google-translate-api');
+process.env.GOOGLE_APPLICATION_CREDENTIALS = require('path').join(__dirname, "key.json")
+const { Translate } = require('@google-cloud/translate');
+
+
+// Instantiates a client
+const translate = new Translate({ projectId: "dulcet-thinker-240702" });
+
+// The text to translate
+
+
+
+
+
+
+
+
 
 
 // Bot Storage: Here we register the state storage for your bot. 
@@ -27,27 +43,30 @@ var inMemoryStorage = new builder.MemoryBotStorage();
 
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
-	
+
 //session.send("Welcome to Langur translation bot. I will help you translate your messages from one language to another. Simply select your languages and write me.");
 
 
 // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
-var bot = new builder.UniversalBot(connector, function (session) {
-	
+var bot = new builder.UniversalBot(connector, async function (session) {
     // session.send("You said b: %s", session.message.text);
-	
-	translate(session.message.text, {from: session.userData.sourceLang, to: session.userData.targetLang}).then(res => {
-    // console.log(res.text);
-    // console.log(res.from.language.iso);
-	
-	session.send(res.text);
-	
-	
-}).catch(err => {
-    console.error(err);
-});
-	
-	
+
+    // translate(session.message.text, { from: session.userData.sourceLang, to: session.userData.targetLang }).then(res => {
+    //     // console.log(res.text);
+    //     // console.log(res.from.language.iso);
+
+    //     session.send(res.text);
+
+
+    // }).catch(err => {
+    //     console.error(err);
+    // });
+
+    // Translates some text into Russian
+    const [translation] = await translate.translate(session.message.text, session.userData.targetLang);
+    // console.log(`Translation: ${translation}`);
+    session.send(translation);
+
 }).set('storage', inMemoryStorage); // Register in memory storage;
 
 bot.on('conversationUpdate', (message) => {
@@ -65,17 +84,17 @@ bot.dialog('firstRun', [
         // Update versio number and start Prompts
         // - The version number needs to be updated first to prevent re-triggering 
         //   the dialog. 
-        session.userData.version = 1.0; 
+        session.userData.version = 1.0;
         session.send("Hello, Welcome you. Please choose your language. :)");
-		
-		session.beginDialog('langMenu'); 
+
+        session.beginDialog('langMenu');
     }
 ]).triggerAction({
     onFindAction: function (context, callback) {
         // Trigger dialog if the users version field is less than 1.0
         // - When triggered we return a score of 1.1 to ensure the dialog is always triggered.
         var ver = context.userData.version || 0;
-        var score = ver < 1.0 ? 1.1: 0.0;
+        var score = ver < 1.0 ? 1.1 : 0.0;
         callback(null, score);
     },
     onInterrupted: function (session, dialogId, dialogArgs, next) {
@@ -91,12 +110,12 @@ bot.dialog('help', function (session) {
 
 // Add help dialog
 bot.dialog('info', function (session) {
-    session.endDialog("Hi, I am an Asisstant, I can help you translate languages. You are translating " + languageHuman(session.userData.sourceLang)  + " to " + languageHuman(session.userData.targetLang) + " Thank you.");
+    session.endDialog("Hi, I am an Asisstant, I can help you translate languages. You are translating " + languageHuman(session.userData.sourceLang) + " to " + languageHuman(session.userData.targetLang) + " Thank you.");
 }).triggerAction({ matches: /^info/i });
 
 // Add help dialog
 bot.dialog('language', function (session) {
-	session.beginDialog('langMenu'); 
+    session.beginDialog('langMenu');
 }).triggerAction({ matches: /^language/i });
 
 // Add root menu dialog
@@ -105,7 +124,7 @@ bot.dialog('langMenu', [
         builder.Prompts.choice(session, "Choose your Source Language:", 'English|Vietnamese|Chinese Traditional');
     },
     function (session, results) {
-		var sourceLang = "en";
+        var sourceLang = "en";
         switch (results.response.index) {
             case 0:
                 sourceLang = "en";
@@ -120,18 +139,18 @@ bot.dialog('langMenu', [
                 session.endDialog();
                 break;
         }
-		session.userData.sourceLang = sourceLang; 
-		session.save();
-		
-		// session.send("Your source language is set to %s", session.userData.sourceLang);
-		builder.Prompts.choice(session, "Now choose your Target Language:", 'English|Vietnamese|Chinese Traditional');
-		
+        session.userData.sourceLang = sourceLang;
+        session.save();
+
+        // session.send("Your source language is set to %s", session.userData.sourceLang);
+        builder.Prompts.choice(session, "Now choose your Target Language:", 'English|Vietnamese|Chinese Traditional');
+
     },
-	// function (session, results) {
-        // builder.Prompts.choice(session, "Now choose your Target Language:", 'English|Vietnamese|Chinese Traditional');
+    // function (session, results) {
+    // builder.Prompts.choice(session, "Now choose your Target Language:", 'English|Vietnamese|Chinese Traditional');
     // },
     function (session, results) {
-		var targetLang = "en";
+        var targetLang = "en";
         switch (results.response.index) {
             case 0:
                 targetLang = "en";
@@ -146,36 +165,36 @@ bot.dialog('langMenu', [
                 session.endDialog();
                 break;
         }
-		session.userData.targetLang = targetLang; 
-		session.save();
-		// session.send("Your target language is set to %s", session.userData.targetLang);
-		session.endDialog("Now type anything and I will translate it for you. Type help if you need any help.");
-		
+        session.userData.targetLang = targetLang;
+        session.save();
+        // session.send("Your target language is set to %s", session.userData.targetLang);
+        session.endDialog("Now type anything and I will translate it for you. Type help if you need any help.");
+
     }
 ]);
 
-function languageHuman(shortlang) { 
-	var lang = "English";
-	switch (shortlang) {
-		  case 'de':
-			lang = "Vietnamese";
-			break;
-		  case 'zh-tw':
-			lang = "Chinese Traditional";
-			break;
-		  case 'en':
-			lang = "English";
-			break;
-		  default:
-			lang = "English";
-			break;
-	}
-   return lang; 
-} 
+function languageHuman(shortlang) {
+    var lang = "English";
+    switch (shortlang) {
+        case 'de':
+            lang = "Vietnamese";
+            break;
+        case 'zh-tw':
+            lang = "Chinese Traditional";
+            break;
+        case 'en':
+            lang = "English";
+            break;
+        default:
+            lang = "English";
+            break;
+    }
+    return lang;
+}
 
 // Add help dialog
 bot.dialog('exit', function (session) {
-	session.endConversation('Thank you for using Langur, See you later.'); 
+    session.endConversation('Thank you for using Langur, See you later.');
 }).triggerAction({ matches: /^exit/i });
 
 // Add a global endConversation() action that is bound to the 'Goodbye' intent
